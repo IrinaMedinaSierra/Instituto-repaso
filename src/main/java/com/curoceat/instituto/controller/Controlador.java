@@ -18,8 +18,9 @@ import curoceat.instituto.services.*;
 @WebServlet(name = "Controlador", value = "/Controlador")
 public class Controlador extends HttpServlet {
     private static final long serialVersionUID = 1L;
-
+    // variable global que guardara los mensajes tanto de exito como error al front-end
     String msnExito,msnError;
+    //objeto alumnoDAO que sera utilizado para enviar a realizar las acciones a la Clase AlumnoDAO
     AlumnoDAO alumnoDAO = new AlumnoDAO();
     String opcion = "";
     int id=0;
@@ -39,7 +40,7 @@ public class Controlador extends HttpServlet {
                         break;
                     }
                     case "modificar":
-                        case "eliminar": {
+                        case "eliminar": { //se pueden realizar case con varias alternativas: eliminar y modificar leen el id
                             id = Integer.parseInt(request.getParameter("cod"));
                             if (opcion.equals("eliminar")) {
                                 eliminar(request, response);
@@ -47,18 +48,17 @@ public class Controlador extends HttpServlet {
                                 modificar(request,response);
                             }
                             break;
-
                     }
+
                     case "ejecutaModificacion":{
                         ejecutaModificacion(request,response);
+                        break;
                     }
                     case "buscar":{
                         String nombreBusq=request.getParameter("nombreBusq");
                         System.out.println(nombreBusq);
                         //crear en Dao busqueda por nombre / por curso / media
-
                         break;
-
                     }
                     default: {
                         System.out.println("opcion invalida");
@@ -68,6 +68,7 @@ public class Controlador extends HttpServlet {
                 throw new RuntimeException(e);
             }
         }
+        //independientemente la opcion que reciba, va al index
         request.getRequestDispatcher("index.jsp").forward(request, response);
     }
     @Override
@@ -79,8 +80,13 @@ public class Controlador extends HttpServlet {
 
         List<Alumno> alumnos = alumnoDAO.readAll();
         request.getSession().setAttribute("listaA", alumnos);
-        request.getRequestDispatcher("index.jsp?opcion=listar").forward(request, response);
+        request.getRequestDispatcher("index.jsp").forward(request, response);
     }
+
+
+
+
+
     protected void alta(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ParseException, ServletException {
 
