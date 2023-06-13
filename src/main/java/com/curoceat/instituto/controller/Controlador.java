@@ -3,13 +3,11 @@ package curoceat.instituto.controller;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
+import java.awt.print.Pageable;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.*;
 
 import curoceat.instituto.modell.Alumno;
@@ -19,11 +17,12 @@ import curoceat.instituto.services.*;
 public class Controlador extends HttpServlet {
     private static final long serialVersionUID = 1L;
     // variable global que guardara los mensajes tanto de exito como error al front-end
-    String msnExito,msnError;
+    String msnExito, msnError;
     //objeto alumnoDAO que sera utilizado para enviar a realizar las acciones a la Clase AlumnoDAO
     AlumnoDAO alumnoDAO = new AlumnoDAO();
     String opcion = "";
-    int id=0;
+    int id = 0;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         opcion = request.getParameter("opcion");
@@ -35,29 +34,23 @@ public class Controlador extends HttpServlet {
                         listar(request, response);
                         break;
                     }
-                     case "alta": {
+                    case "alta": {
                         alta(request, response);
                         break;
                     }
                     case "modificar":
-                        case "eliminar": { //se pueden realizar case con varias alternativas: eliminar y modificar leen el id
-                            id = Integer.parseInt(request.getParameter("cod"));
-                            if (opcion.equals("eliminar")) {
-                                eliminar(request, response);
-                            }else {
-                                modificar(request,response);
-                            }
-                            break;
-                    }
-
-                    case "ejecutaModificacion":{
-                        ejecutaModificacion(request,response);
+                    case "eliminar": { //se pueden realizar case con varias alternativas: eliminar y modificar leen el id
+                        id = Integer.parseInt(request.getParameter("cod"));
+                        if (opcion.equals("eliminar")) {
+                            eliminar(request, response);
+                        } else {
+                            modificar(request, response);
+                        }
                         break;
                     }
-                    case "buscar":{
-                        String nombreBusq=request.getParameter("nombreBusq");
-                        System.out.println(nombreBusq);
-                        //crear en Dao busqueda por nombre / por curso / media
+
+                    case "ejecutaModificacion": {
+                        ejecutaModificacion(request, response);
                         break;
                     }
                     default: {
@@ -69,27 +62,33 @@ public class Controlador extends HttpServlet {
             }
         }
         //independientemente la opcion que reciba, va al index
-        request.getRequestDispatcher("index.jsp").forward(request, response);
+        //      request.getRequestDispatcher("index.jsp").forward(request, response);
     }
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)  {
-    }
+
 
     protected void listar(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ParseException, ServletException {
-
+        int paginaAmostrar=Integer.parseInt(request.getParameter("pagina"));
+        System.out.println("La pagina a mostrar es " + paginaAmostrar);
         List<Alumno> alumnos = alumnoDAO.readAll();
-        request.getSession().setAttribute("listaA", alumnos);
+        int tamL = (int) Math.ceil((alumnos.size() / 10)+0.5);//redondeamos hacia arriba
+        System.out.println(tamL);
+        ArrayList<Integer> pag = new ArrayList();
+        for (int i = 1; i <= tamL; i++) {
+            pag.add(i);
+        }
+        int begin=(paginaAmostrar-1)*10;
+        int end= begin+9;
+        request.setAttribute("begin", begin);
+        request.setAttribute("end", end);
+        request.setAttribute("paginas", pag);
+        request.setAttribute("listaA", alumnos);
         request.getRequestDispatcher("index.jsp").forward(request, response);
     }
-
-
-
 
 
     protected void alta(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ParseException, ServletException {
-
         String nombre = request.getParameter("nombre");
         String curso = request.getParameter("curso");
         String fnac = request.getParameter("fnac");
@@ -103,8 +102,8 @@ public class Controlador extends HttpServlet {
         } catch (Exception e) {
             msnError = "Error en la nueva alta";
             request.setAttribute("msnError", msnError);
-        }finally {
-            listar(request,response);
+        } finally {
+            listar(request, response);
         }
 
     }
@@ -116,35 +115,37 @@ public class Controlador extends HttpServlet {
         request.setAttribute("id", a.getId());
         request.setAttribute("nombre", a.getNombre());
         request.setAttribute("curso", a.getCurso());
-        request.setAttribute("media",a.getMedia());
+        request.setAttribute("media", a.getMedia());
 
-        SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd");
-        String fecha = date.format(a.getfNacimiento());
-        System.out.println(fecha);
 
-        request.setAttribute("fnac",fecha);
-        request.getRequestDispatcher("modificar.jsp").forward(request,response);
+        //String fecha = a.getfNacimiento());
+       // System.out.println(fecha);
+
+        request.setAttribute("fnac", a.getfNacimiento());
+        request.getRequestDispatcher("modificar.jsp").forward(request, response);
     }
-    protected  void  ejecutaModificacion(HttpServletRequest request, HttpServletResponse response)
+
+    protected void ejecutaModificacion(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ParseException, ServletException {
-        int id=Integer.parseInt(request.getParameter("id"));
+        int id = Integer.parseInt(request.getParameter("id"));
         String nombre = request.getParameter("nombre");
         String curso = request.getParameter("curso");
         String fnac = request.getParameter("fnac");
         float media = Float.parseFloat(request.getParameter("media"));
-        try{
-            Alumno a= new Alumno(id,nombre,curso, media, fnac);
+        try {
+            Alumno a = new Alumno(id, nombre, curso, media, fnac);
             alumnoDAO.update(a);
             msnExito = "Alumno Modificado correctamente";
             request.setAttribute("msnExito", msnExito);
-        }catch (Exception e){
-            msnError="Un error ha ocurrido al intentar modificar el registro";
+        } catch (Exception e) {
+            msnError = "Un error ha ocurrido al intentar modificar el registro";
             request.setAttribute("msnError", msnError);
-        }  finally {
-        listar(request, response);
-    }
+        } finally {
+            listar(request, response);
+        }
 
     }
+
     protected void eliminar(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ParseException, ServletException {
         try {
@@ -159,4 +160,38 @@ public class Controlador extends HttpServlet {
         }
     }
 
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String nombreBusq = request.getParameter("nombreBusq");
+        String opcionBusq = request.getParameter("opcionBusq");
+        boolean buscar=false;
+        ArrayList<Alumno> listaEncontrada=null;
+        if (opcionBusq.equals("id")|| opcionBusq.equals("media")){
+            try {
+                int comprobacion=Integer.parseInt(nombreBusq);
+                buscar=true;
+
+            }catch (Exception e){
+                buscar=false;
+                msnError="Existe un error en los parametros de la búsqueda, solo número!";
+                request.setAttribute("msnError",msnError);
+            }
+        }
+        if (buscar) {
+            try {
+                listaEncontrada = alumnoDAO.buscar(nombreBusq, opcionBusq);
+            } catch (SQLException e) {
+                msnError = "Existe un error en los parametros de la búsqueda";
+                request.setAttribute("msnError", msnError);
+                request.getRequestDispatcher("index.jsp").forward(request, response);
+            }
+            if (listaEncontrada.isEmpty()) {
+                msnError = "No existen resultados que coincidan con la búsqueda seleccionada";
+                request.setAttribute("msnError", msnError);
+            } else {
+                request.setAttribute("listaA", listaEncontrada);
+            }
+        }
+        request.getRequestDispatcher("index.jsp").forward(request, response);
+    }
 }

@@ -3,14 +3,16 @@ package curoceat.instituto.modell;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 public class Alumno {
     private int id;
     private String nombre;
     private String curso;
     private float media;
-    private Date fNacimiento;
+    private LocalDate fNacimiento;
 
     // crear una costante  con el longitud de caracteres del nombre como esta definida en la BBDD
     private final int TAMNOMBRE=50;
@@ -27,8 +29,10 @@ public class Alumno {
         setCurso(curso);
         this.media = media;
         // dale formato a la fecha
-        SimpleDateFormat formato=new SimpleDateFormat("yyyy-MM-dd");
-        this.fNacimiento = formato.parse(fNacimiento); //puede que exista un error al intentar crear el formato y se agrega un ParseException
+     //   SimpleDateFormat formato=new SimpleDateFormat("yyyy-MM-dd");
+      //  this.fNacimiento = formato.parse(fNacimiento); //puede que exista un error al intentar crear el formato y se agrega un ParseException
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        this.fNacimiento = LocalDate.parse(fNacimiento, formato);
     }
  // este contructor lo utilizamos para crear un nuevo alumno porque BD crea automaticamente el id
     public Alumno(String nombre, String curso, float media, String fNacimiento) throws ParseException {
@@ -36,8 +40,10 @@ public class Alumno {
         setCurso(curso);
         this.media = media;
         // dale formato a la fecha
-        SimpleDateFormat formato=new SimpleDateFormat("yyyy-MM-dd");
-        this.fNacimiento = formato.parse(fNacimiento); //puede que exista un error al intentar crear el formato y se agrega un ParseException
+     //   SimpleDateFormat formato=new SimpleDateFormat("yyyy/MM/dd");
+      //  Date paso = formato.parse(fNacimiento); //puede que exista un error al intentar crear el formato y se agrega un ParseException
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        this.fNacimiento = LocalDate.parse(fNacimiento, formato);
     }
 
     //metodo para delimitar caracteres del nombre ->50 caracteres
@@ -68,11 +74,11 @@ public class Alumno {
         this.media = media;
     }
 
-    public Date getfNacimiento() {
+    public LocalDate getfNacimiento() {
 
         return fNacimiento;
     }
-    public void setfNacimiento(Date fNacimiento) {
+    public void setfNacimiento(LocalDate fNacimiento) {
         this.fNacimiento = fNacimiento;
     }
 

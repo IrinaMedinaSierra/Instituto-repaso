@@ -18,7 +18,7 @@ import java.util.*;
 
 
 
-public class AlumnoDAO extends Conexion {
+public class AlumnoDAO <T> extends Conexion {
 
         String sql;
 
@@ -49,13 +49,13 @@ public class AlumnoDAO extends Conexion {
                     ResultSet rs= pt.executeQuery();
                 if(rs.next()){
                     String nombre=rs.getString("nombre");
-                    Float media=rs.getFloat("media");
+                    float media=rs.getFloat("media");
                     String curso=rs.getString("curso");
                     String fnac=rs.getString("fnac");
                     a=new Alumno(id,nombre,curso,media,fnac); //se envia al constructor con el id
-                    con.close();
-                }
 
+                }
+                    con.close();
                 }catch (SQLException e){
                    e.printStackTrace();
                 }
@@ -77,8 +77,10 @@ public class AlumnoDAO extends Conexion {
                 pt.setString(2, a.getCurso());
                 pt.setFloat(3, a.getMedia());
                 /* La fecha de nacimiento la recibimos como tido java.util.date  la debemos castear java.sql.date*/
-                java.sql.Date sqlDate = new java.sql.Date(a.getfNacimiento().getTime());
-                pt.setDate(4, sqlDate);
+                String paso=  String.valueOf(a.getfNacimiento());
+            //    java.sql.Date sqlDate = new java.sql.Date(a.getfNacimiento().getTime());
+
+                pt.setString(4,paso);
                 if (opcion.equals("update")){
                     pt.setInt(5,a.getId());
                 }
@@ -137,7 +139,56 @@ public class AlumnoDAO extends Conexion {
     return lista;
     }
 
-
-
-
+//buscar por curso
+public  ArrayList<Alumno> buscar(T valor,String opcionBusqueda) throws SQLException {
+    ArrayList<Alumno> lista=new ArrayList<>();
+    Alumno a;
+    String valorC= (String) valor;
+    PreparedStatement pt;
+    ResultSet rs;
+    try (Connection con = conectar()) {
+        sql = "SELECT * FROM alumnos WHERE " + opcionBusqueda + "=?;";
+        pt = con.prepareStatement(sql);
+        if (opcionBusqueda.equals("id")) {
+            int valorId = Integer.parseInt(valorC);
+            pt.setInt(1, valorId);
+            rs = pt.executeQuery();
+            if (rs.next()) {
+                String nombre = rs.getString("nombre");
+                float media = rs.getFloat("media");
+                String curso = rs.getString("curso");
+                String fnac = rs.getString("fnac");
+                a = new Alumno(valorId, nombre, curso, media, fnac); //se envia al constructor con el id
+                lista.add(a);
+            }
+        } else {
+            if (opcionBusqueda.equals("nombre") || opcionBusqueda.equals("curso")) {
+                pt.setString(1, valorC);
+            } else if (opcionBusqueda.equals("media")) {
+                float valorFloat = Float.parseFloat(valorC);
+                pt.setFloat(1, valorFloat);
+            }
+            rs = pt.executeQuery();
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String nombre = rs.getString("nombre");
+                float media = rs.getFloat("media");
+                String curso = rs.getString("curso");
+                String fnac = rs.getString("fnac");
+                a = new Alumno(id, nombre, curso, media, fnac);
+                System.out.println(a);
+                lista.add(a);
+            }
         }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } catch (ParseException e) {
+        throw new RuntimeException(e);
+    }
+    return lista;
+}
+
+
+
+}

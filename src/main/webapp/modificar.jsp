@@ -22,6 +22,7 @@
     <form action="Controlador"  method="get" class="needs-validation" novalidate >
 
         <input type="hidden" name="opcion" value="ejecutaModificacion">
+        <input type="hidden" name="pagina" value="1">
 
          <div class="needs-validation" novalidate  >
         <div class="row">

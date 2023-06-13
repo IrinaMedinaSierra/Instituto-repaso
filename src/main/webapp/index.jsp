@@ -12,8 +12,6 @@
 <jsp:include page="header.jsp"></jsp:include>
 
 <div class="container">
-
-
         <c:if test="${ not empty msnExito}">
             <div class="alert alert-success" role="alert">
                 <c:out value="${msnExito}"/>
@@ -40,7 +38,7 @@
         <th>Acciones</th>
     </tr>
     <!--Recorrido For Each de la tabla-->
-    <c:forEach var="alum" items="${listaA}">
+    <c:forEach var="alum" items="${listaA}" begin="${begin}" end="${end}">
         <tr>
             <th><c:out value="${alum.id}"></c:out> </th>
             <td><c:out value="${alum.nombre}"></c:out> </td>
@@ -48,13 +46,20 @@
             <td><c:out value="${alum.curso}"></c:out> </td>
             <td><c:out value="${alum.media}"></c:out> </td>
             <td>
-                <a href="Controlador?opcion=modificar&cod=<c:out value='${alum.id}'></c:out> " class="btn fs-6">&#128394;</a>
-                <a href="Controlador?opcion=eliminar&cod=<c:out value='${alum.id}'></c:out> " class="btn fs-6"> &#128465;</a>
+                <a href="Controlador?opcion=modificar&pagina=1&cod=<c:out value='${alum.id}'></c:out> " class="btn fs-6">&#128394;</a>
+                <a href="Controlador?opcion=eliminar&pagina=1&cod=<c:out value='${alum.id}'></c:out> " class="btn fs-6"> &#128465;</a>
             </td>
         </tr>
     </c:forEach>
     </c:if>
 </table>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+            <c:forEach items="${paginas}" var="pag">
+                <li class="page-item"><a class="page-link" href="Controlador?opcion=listar&pagina=${pag}"><c:out value="${pag}"></c:out></a></li>
+            </c:forEach>
+        </ul>
+    </nav>
 </div>
 </body>
 </html>
